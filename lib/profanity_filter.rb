@@ -9,8 +9,6 @@ require 'profanity_filter/leet_exact_match_strategy'
 require 'web_purify'
 
 class ProfanityFilter
-  include Singleton
-
   WP_DEFAULT_LANGS = [:en, :sp, :pt].freeze
   WP_AVAILABLE_LANGS = [
     :en, :ar, :fr, :de, :hi, :jp, :it, :pt, :ru, :sp, :th, :tr, :zh, :kr, :pa
@@ -83,6 +81,8 @@ class ProfanityFilter
     banned_words_count
   end
 
+  private
+
   def use_webpurify?
     !!@wp_client
   end
@@ -126,7 +126,7 @@ class ProfanityFilter
     langs = Set.new w
 
     if lang
-      lang = CB::Util.shorten_language(lang).to_sym
+      lang = shorten_language(lang).to_sym
       lang = WP_LANG_CONVERSIONS[lang] || lang
       if lang.in?(WP_AVAILABLE_LANGS)
         langs << lang
@@ -150,5 +150,9 @@ class ProfanityFilter
 
   def load_partial_match_dictionary
     load_dictionary('partial_match')
+  end
+
+  def shorten_language lang
+    lang && lang.to_s.downcase[0, 2]
   end
 end
