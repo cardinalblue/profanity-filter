@@ -22,8 +22,8 @@ module ProfanityFilterEngine
     end
 
     def build_leet_dictionary
-      lib_dir  = File.join(File.dirname(__FILE__), '../')
-      file     = File.read("#{lib_dir}profanity_dictionaries/leet_strategy_dictionary.yaml")
+      lib_dir  = File.expand_path('../../../', __FILE__)
+      file     = File.read("#{lib_dir}/profanity_dictionaries/leet_strategy_dictionary.yaml")
       raw_data = YAML.safe_load(file)
       dict     = transform_data_to_regex(raw_data)
       ::ProfanityFilterEngine::LeetExactMatchStrategy.const_set('LEET_DICTIONARY', dict)

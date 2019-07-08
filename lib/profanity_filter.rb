@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 require 'profanity_filter/version'
-require 'profanity_filter/composite'
-require 'profanity_filter/partial_match_strategy'
-require 'profanity_filter/allow_duplicate_characters_strategy'
-require 'profanity_filter/allow_symbols_in_words_strategy'
-require 'profanity_filter/leet_exact_match_strategy'
+require 'profanity_filter/engines/composite'
+require 'profanity_filter/engines/partial_match_strategy'
+require 'profanity_filter/engines/allow_duplicate_characters_strategy'
+require 'profanity_filter/engines/allow_symbols_in_words_strategy'
+require 'profanity_filter/engines/leet_exact_match_strategy'
 require 'web_purify'
 
 class ProfanityFilter
