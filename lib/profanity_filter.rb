@@ -124,8 +124,8 @@ class ProfanityFilter
     nil
   end
 
-  def wp_langs_list_with lang
-    langs = Set.new WP_DEFAULT_LANGS
+  def wp_langs_list_with(lang)
+    langs = Set.new(WP_DEFAULT_LANGS)
 
     if lang
       lang = shorten_language(lang).to_sym
@@ -154,7 +154,7 @@ class ProfanityFilter
     load_dictionary('partial_match')
   end
 
-  def shorten_language lang
+  def shorten_language(lang)
     lang && lang.to_s.downcase[0, 2]
   end
 end
