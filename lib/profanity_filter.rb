@@ -19,7 +19,7 @@ class ProfanityFilter
 
   def initialize(web_purifier_api_key: nil)
     # If we are using Web Purifier
-    @wp_client = WebPurify::Client.new(web_purifier_api_key) if web_purifier_api_key
+    @wp_client = web_purifier_api_key ? WebPurify::Client.new(web_purifier_api_key) : nil
 
     exact_match_dictionary = load_exact_match_dictionary
     partial_match_dictionary = load_partial_match_dictionary
@@ -120,15 +120,17 @@ class ProfanityFilter
     Timeout::timeout(timeout_duration) do
       @wp_client.check_count phrase, lang: wp_langs_list_with(lang)
     end
+  rescue StandardError => e
+    nil
   end
 
   def wp_langs_list_with lang
-    langs = Set.new w
+    langs = Set.new WP_DEFAULT_LANGS
 
     if lang
       lang = shorten_language(lang).to_sym
       lang = WP_LANG_CONVERSIONS[lang] || lang
-      if lang.in?(WP_AVAILABLE_LANGS)
+      if WP_AVAILABLE_LANGS.include?(lang)
         langs << lang
       end
     end
