@@ -1,0 +1,69 @@
+# frozen_string_literal: true
+
+require_relative '../test_helper'
+
+module ProfanityFilterEngine
+  class LeetExactMatchStrategyTest < Minitest::Test
+    def test_different_latin_like_characters
+      varients_struct = Struct.new(:o, :a)
+      o_vals = %w(o ó ø)
+      a_vals = %w(a á å)
+      o_vals.product(a_vals).each do |vars_arr|
+        vars = varients_struct.new(*vars_arr)
+        o = vars.o
+        big_o = o.upcase
+        a = vars.a
+        big_a = a.upcase
+
+        strategy = ::ProfanityFilterEngine::LeetExactMatchStrategy.new(
+          dictionary: %W(f#{o}#{o} b#{a}r),
+          ignore_case: true
+        )
+
+        foo_text = "f f#{o}  f#{o}#{o}"
+        assert_equal ["f#{o}#{o}"], strategy.profane_words(foo_text)
+        assert_equal 1, strategy.profanity_count(foo_text)
+        assert strategy.profane?(foo_text)
+
+        foo_bar_text = "f#{o}#{o}  ff#{o}#{o} f#{o}#{o}b#{a}rr  b#{a}rf#{o} b#{a}r"
+        assert_equal ["f#{o}#{o}", "ff#{o}#{o}", "b#{a}r"], strategy.profane_words(foo_bar_text)
+        assert_equal 3, strategy.profanity_count(foo_bar_text)
+        assert strategy.profane?(foo_bar_text)
+
+        foo_bar_upcase_text = "f#{big_o}#{o} B#{big_a}R"
+        assert_equal ["f#{big_o}#{o}", "B#{big_a}R"], strategy.profane_words(foo_bar_upcase_text)
+        assert_equal 2, strategy.profanity_count(foo_bar_upcase_text)
+        assert strategy.profane?(foo_bar_upcase_text)
+
+        # sub-string should not be matched
+        fooo_bbar_text = "f#{o}#{o}#{o} bb#{a}r"
+        assert_empty strategy.profane_words(fooo_bbar_text)
+        assert_equal 0, strategy.profanity_count(fooo_bbar_text)
+        refute strategy.profane?(fooo_bbar_text)
+
+        # space and symbol inside the word should not be matched
+        symbols = %w(~ ` ! @ # $ % ^ & * ( ) _ + { } | \ [ ] " ' : ; < > ? , / ¿ ¡)
+        foo_with_symbol_text = symbols.reduce("f #{o}#{o}") do |meme, symbol|
+          meme + " f#{symbol}#{o}#{o}"
+        end
+        assert_empty strategy.profane_words(foo_with_symbol_text)
+        assert_equal 0, strategy.profanity_count(fooo_bbar_text)
+        refute strategy.profane?(foo_with_symbol_text)
+      end
+    end
+
+    def test_leet_variations
+      varients_struct = Struct.new(:f, :o)
+      f_vals = %w(f f. f- ƒ)
+      o_vals = %w(o o. o- 0 Ο ο Φ ¤ ° ø)
+      f_vals.product(o_vals).each do |vars_arr|
+        vars = varients_struct.new(*vars_arr)
+        strategy = LeetExactMatchStrategy.new(dictionary: %W(FoO), ignore_case: true)
+        text = "#{vars.f}#{vars.o}#{vars.o}"
+        assert_equal [text], strategy.profane_words(text)
+        assert_equal 1, strategy.profanity_count(text)
+        assert strategy.profane?(text)
+      end
+    end
+  end
+end
