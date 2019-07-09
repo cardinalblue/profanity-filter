@@ -14,9 +14,7 @@ Gem::Specification.new do |spec|
                         constructions (multi-part), injections and unicode.'
   spec.homepage      = 'https://github.com/cardinalblue/profanity-filter'
   spec.license       = 'MIT'
-
-  spec.metadata['allowed_push_host'] = 'http://mygemserver.com'
-
+  
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/cardinalblue/profanity-filter'
   spec.metadata['changelog_uri'] = 'https://github.com/cardinalblue/profanity-filter/blob/master/CHANGELOG.md'
