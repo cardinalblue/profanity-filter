@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'profanity_filter/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'profanity_filter'
+  spec.name          = 'profanity-filter'
   spec.version       = ProfanityFilter::VERSION
   spec.authors       = ['Maso Lin', 'Jenny Shih']
   spec.email         = ['dev@cardinalblue.com']

@@ -1,6 +1,6 @@
 # ProfanityFilter
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/profanity_filter`. To experiment with that code, run `bin/console` for an interactive prompt.
+Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/profanity-filter`. To experiment with that code, run `bin/console` for an interactive prompt.
 
 TODO: Delete this and the text above, and describe your gem
 
@@ -9,7 +9,7 @@ TODO: Delete this and the text above, and describe your gem
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'profanity_filter'
+gem 'profanity-filter'
 ```
 
 And then execute:
@@ -18,11 +18,22 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install profanity_filter
+    $ gem install profanity-filter
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+# without WebPurify 
+pf = ProfanityFilter.new
+# with WebPurify
+pf = ProfanityFilter.new(webpurify_api_key: [YOUR-API-KEY])
+
+pf.profane? ('ssssshit')
+# => true
+
+pf.profanity_count('fjsdio fdsk fU_cK_THIS_shI_T')
+# => 2
+```
 
 ## Development
 
@@ -32,7 +43,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/profanity_filter. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/cardinalblue/profanity-filter. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
