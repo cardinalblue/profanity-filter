@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "bundler/setup"
-require "profanity_filter"
+require "profanity-filter"
 
 require "pry"
 Pry.start

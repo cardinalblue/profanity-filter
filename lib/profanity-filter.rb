@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'profanity_filter/version'
-require 'profanity_filter/engines/composite'
-require 'profanity_filter/engines/partial_match_strategy'
-require 'profanity_filter/engines/allow_duplicate_characters_strategy'
-require 'profanity_filter/engines/allow_symbols_in_words_strategy'
-require 'profanity_filter/engines/leet_exact_match_strategy'
+require 'profanity-filter/version'
+require 'profanity-filter/engines/composite'
+require 'profanity-filter/engines/partial_match_strategy'
+require 'profanity-filter/engines/allow_duplicate_characters_strategy'
+require 'profanity-filter/engines/allow_symbols_in_words_strategy'
+require 'profanity-filter/engines/leet_exact_match_strategy'
 require 'web_purify'
 
 class ProfanityFilter
@@ -140,7 +140,7 @@ class ProfanityFilter
 
   def load_dictionary(file_path)
     dir = File.dirname(__FILE__)
-    YAML.load(File.read("#{dir}/profanity_dictionaries/#{file_path}.yaml"))
+    YAML.load(File.read("#{dir}/profanity-dictionaries/#{file_path}.yaml"))
   end
 
   def load_exact_match_dictionary

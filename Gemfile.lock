@@ -1,14 +1,14 @@
 PATH
   remote: .
   specs:
-    profanity-filter (0.1.1)
+    profanity-filter (0.1.2)
       webpurify
 
 GEM
   remote: https://rubygems.org/
   specs:
     coderay (1.1.2)
-    json (2.2.0)
+    json (2.1.0)
     method_source (0.9.2)
     minitest (5.11.3)
     pry (0.12.2)
