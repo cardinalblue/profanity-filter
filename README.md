@@ -1,3 +1,18 @@
+## Profanity Filter
+Strategies to publish offensive texts online can be roughly grouped into 5 categories:
+1. Similarities, eg. b ⇔ 6
+2. Diacritics(sound alteration), eg. u ⇔ ü, ù, ú
+3. Constructions(multi-part), eg. W ⇔ VV, V ⇔ \/
+4. Injections, eg. s-h-i-t, shhhhhhhhhhhit
+5. Unicode(same shape but different unicode), eg ⒜, ⍺, ａ, 𝐚, 𝑎, 𝒂, 𝒶, 𝓪, 𝔞, 𝕒, 𝖆, 𝖺, 𝗮, 𝘢, 𝙖
+
+This profanity filter implements:
+- [Full Support] diacritics, injections, unicode
+- [Partial Support] similarities, constructions
+
+This gem is also integrated with [Web Purify](https://www.webpurify.com). Usage example below.
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -19,6 +34,7 @@ Or install it yourself as:
 ```ruby
 # without WebPurify 
 pf = ProfanityFilter.new
+
 # with WebPurify
 pf = ProfanityFilter.new(web_purifier_api_key: [YOUR-API-KEY])
 
