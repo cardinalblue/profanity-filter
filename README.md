@@ -26,7 +26,7 @@ Or install it yourself as:
 # without WebPurify 
 pf = ProfanityFilter.new
 # with WebPurify
-pf = ProfanityFilter.new(webpurify_api_key: [YOUR-API-KEY])
+pf = ProfanityFilter.new(web_purifier_api_key: [YOUR-API-KEY])
 
 pf.profane? ('ssssshit')
 # => true
