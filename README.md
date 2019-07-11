@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/profanity-filter.svg)](https://badge.fury.io/rb/profanity-filter)
+
 ## Profanity Filter
 Strategies to publish offensive texts online can be roughly grouped into 5 categories:
 1. Similarities, eg. b ⇔ 6
