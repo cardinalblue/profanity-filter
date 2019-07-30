@@ -5,7 +5,7 @@ require 'profanity-filter/version'
 Gem::Specification.new do |spec|
   spec.name          = 'profanity-filter'
   spec.version       = ProfanityFilter::VERSION
-  spec.authors       = ['Maso Lin', 'Jenny Shih']
+  spec.authors       = ['Maso Lin', 'Jenny Shih', 'YenTing Chen']
   spec.email         = ['dev@cardinalblue.com']
 
   spec.summary       = 'To detect if a given string contains profane words.'
