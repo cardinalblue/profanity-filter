@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'exact_match_strategy'
-require 'pry'
 
 module ProfanityFilterEngine
   class LeetExactMatchStrategy < ExactMatchStrategy
