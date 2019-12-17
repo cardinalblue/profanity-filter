@@ -9,7 +9,7 @@ require 'profanity-filter/engines/leet_exact_match_strategy'
 require 'web_purify'
 
 class ProfanityFilter
-  WP_DEFAULT_LANGS = [:en, :sp, :pt].freeze
+  WP_DEFAULT_LANGS = [:en].freeze
   WP_AVAILABLE_LANGS = [
     :en, :ar, :fr, :de, :hi, :jp, :it, :pt, :ru, :sp, :th, :tr, :zh, :kr, :pa
   ].freeze
