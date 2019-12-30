@@ -62,25 +62,22 @@ class ProfanityFilter
     return false if phrase == ''
     return false if @whitelist.include?(phrase)
 
-    is_profane = pf_profane?(phrase, strictness: strictness)
-    if !is_profane && use_webpurify?
-      wp_is_profane = wp_profane?(phrase, lang: lang)
-      is_profane = wp_is_profane unless wp_is_profane.nil?
+    if use_webpurify?
+      !!(pf_profane?(phrase, strictness: strictness) || wp_profane?(phrase, lang: lang))
+    else
+      !!pf_profane?(phrase, strictness: strictness)
     end
-
-    !!is_profane
   end
 
   def profanity_count(phrase, lang: nil, strictness: :tolerant)
     return 0 if phrase == '' || phrase.nil?
 
-    banned_words_count = pf_profanity_count(phrase, strictness: strictness)
-    if banned_words_count == 0 && use_webpurify?
-      wp_banned_words_count = wp_profanity_count(phrase, lang: lang)
-      banned_words_count = wp_banned_words_count unless wp_banned_words_count.nil?
+    pf_count = pf_profanity_count(phrase, strictness: strictness)
+    if use_webpurify?
+      pf_count.zero? ? wp_profanity_count(phrase, lang: lang).to_i : pf_count
+    else
+      pf_count
     end
-
-    banned_words_count
   end
 
   private
