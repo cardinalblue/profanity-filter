@@ -44,6 +44,11 @@ class ProfanityFilterTest < Minitest::Test
     end
   end
 
+  def test_profanity_with_whitelist
+    profane_word = 'shit'
+    refute ProfanityFilter.new(whitelist: [profane_word]).profane?(profane_word)
+  end
+
   def test_strict_and_tolerant_strictness
     strict_levels = [:tolerant, :strict]
     both_profane_texts = [

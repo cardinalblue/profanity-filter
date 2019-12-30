@@ -17,9 +17,10 @@ class ProfanityFilter
 
   attr_reader :strict_filter, :tolerant_filter
 
-  def initialize(web_purifier_api_key: nil)
+  def initialize(web_purifier_api_key: nil, whitelist: [])
     # If we are using Web Purifier
     @wp_client = web_purifier_api_key ? WebPurify::Client.new(web_purifier_api_key) : nil
+    @whitelist = whitelist
 
     exact_match_dictionary = load_exact_match_dictionary
     partial_match_dictionary = load_partial_match_dictionary
@@ -58,7 +59,8 @@ class ProfanityFilter
   end
 
   def profane?(phrase, lang: nil, strictness: :tolerant)
-    return false if phrase == '' || phrase.nil?
+    return false if phrase == ''
+    return false if @whitelist.include?(phrase)
 
     is_profane = pf_profane?(phrase, strictness: strictness)
     if !is_profane && use_webpurify?
@@ -120,7 +122,7 @@ class ProfanityFilter
     Timeout::timeout(timeout_duration) do
       @wp_client.check_count phrase, lang: wp_langs_list_with(lang)
     end
-  rescue StandardError => e
+  rescue StandardError
     nil
   end
 
