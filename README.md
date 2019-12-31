@@ -91,6 +91,14 @@ pf.profane?('test_string', strategies: [:partial_match, :leet])
 pf.profanity_count('test_string', strategies: [:partial_match, :leet])
 ```
 
+Also, we also supports `whitelist`, specified at object creation.
+
+```ruby
+pf_with_whitelist = ProfanityFilter.new(whitelist: ['asshole'])
+pf_with_whitelist.profane?('asshole')
+# => false
+
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
