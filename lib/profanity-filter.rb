@@ -15,6 +15,11 @@ class ProfanityFilter
     :en, :ar, :fr, :de, :hi, :jp, :it, :pt, :ru, :sp, :th, :tr, :zh, :kr, :pa
   ].freeze
 
+  LEET_STRATEGY                 = :leet
+  ALLOW_SYMBOL_STRATEGY         = :allow_symbol
+  PARTIAL_MATCH_STRATEGY        = :partial_match
+  DUPLICATE_CHARACTERS_STRATEGY = :duplicate_characters
+
   attr_reader :available_strategies
 
   def initialize(web_purifier_api_key: nil, whitelist: [])
@@ -27,19 +32,19 @@ class ProfanityFilter
     partial_match_dictionary = load_partial_match_dictionary
 
     @available_strategies = {
-      allow_symbol: ::ProfanityFilterEngine::AllowSymbolsInWordsStrategy.new(
+      ALLOW_SYMBOL_STRATEGY => ::ProfanityFilterEngine::AllowSymbolsInWordsStrategy.new(
         dictionary:  exact_match_dictionary,
         ignore_case: true
       ),
-      duplicate_characters: ::ProfanityFilterEngine::AllowDuplicateCharactersStrategy.new(
+      DUPLICATE_CHARACTERS_STRATEGY => ::ProfanityFilterEngine::AllowDuplicateCharactersStrategy.new(
         dictionary:  exact_match_dictionary,
         ignore_case: true
       ),
-      leet: ::ProfanityFilterEngine::LeetExactMatchStrategy.new(
+      LEET_STRATEGY => ::ProfanityFilterEngine::LeetExactMatchStrategy.new(
         dictionary:  exact_match_dictionary,
         ignore_case: true
       ),
-      partial_match: ::ProfanityFilterEngine::PartialMatchStrategy.new(
+      PARTIAL_MATCH_STRATEGY => ::ProfanityFilterEngine::PartialMatchStrategy.new(
         dictionary:  partial_match_dictionary + exact_match_dictionary,
         ignore_case: true
       ),
@@ -48,6 +53,10 @@ class ProfanityFilter
 
   def all_strategy_names
     available_strategies.keys
+  end
+
+  def basic_strategy_names
+    [ALLOW_SYMBOL_STRATEGY, PARTIAL_MATCH_STRATEGY]
   end
 
   def profane?(phrase, lang: nil, strategies: :all)
@@ -80,14 +89,16 @@ class ProfanityFilter
 
   def filter(strategies:)
     ::ProfanityFilterEngine::Composite.new.tap do |engine|
-      if strategies == :all
-        engine.add_strategies(*available_strategies.values)
+      case strategies
+      when :all
+        all_strategy_names.each { |s| engine.add_strategy(available_strategies[s]) }
+      when :basic
+        basic_strategy_names.each { |s| engine.add_strategy(available_strategies[s]) }
       else
-        strategies.each do |strategy|
-          strategy = strategy.to_sym
-          raise "Strategy name \"#{strategy}\" not supported." unless all_strategies.include?(strategy)
+        strategies.each do |s|
+          raise "Strategy name \"#{s}\" not supported." unless all_strategy_names.include?(s)
 
-          engine.add_strategy(available_strategies[strategy])
+          engine.add_strategy(available_strategies[s])
         end
       end
     end

@@ -65,14 +65,6 @@ class ProfanityFilterTest < Minitest::Test
     end
   end
 
-  def test_config_strategies_works_for_array_of_symbol_or_string
-    strategies = @filter.all_strategy_names.tap do |s|
-      s[0] = s[0].to_s
-      s[1] = s[1].to_s
-    end
-    @filter.profane?('_', strategies: strategies)
-  end
-
   def test_config_with_one_strategy
     duplicated_profane_word = 'shhhhhhit'
     refute @filter.profane?(duplicated_profane_word, strategies: [])
@@ -91,9 +83,11 @@ class ProfanityFilterTest < Minitest::Test
     assert @filter.profane?(partial_match_profane_word, strategies: [:partial_match])
   end
 
-  def test_config_with_legacy_tolerant_and_strict_filter
-    legacy_tolerant_filter_strategies = [:allow_symbol, :partial_match]
-    legacy_strict_filter_strategies = @filter.all_strategy_names
+  def test_config_with_basic_and_all_strategies
+    # :basic strategies is the legacy 'tolerant' filter,
+    # containing 'allow_symbol' and 'partial match' strategies.
+    # :all strategies is the legacy 'strict' filter,
+    # containing all four strategies.
 
     only_strict_profane_texts = [
       'You are s.h-!7!',
@@ -101,11 +95,11 @@ class ProfanityFilterTest < Minitest::Test
     ]
 
     only_strict_profane_texts.each do |word|
-      assert_equal 0, @filter.profanity_count(word, strategies: legacy_tolerant_filter_strategies)
-      assert_equal 1, @filter.profanity_count(word, strategies: legacy_strict_filter_strategies)
+      assert_equal 0, @filter.profanity_count(word, strategies: :basic)
+      assert_equal 1, @filter.profanity_count(word, strategies: :all)
 
-      refute @filter.profane?(word, strategies: legacy_tolerant_filter_strategies)
-      assert @filter.profane?(word, strategies: legacy_strict_filter_strategies)
+      refute @filter.profane?(word, strategies: :basic)
+      assert @filter.profane?(word, strategies: :all)
     end
   end
 
