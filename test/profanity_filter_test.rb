@@ -28,8 +28,8 @@ class ProfanityFilterTest < Minitest::Test
       assert_equal 2, @filter.profanity_count(word)
     end
 
-    assert @filter.profane?(@profanity_five_matches_with_emoji)
-    assert_equal 5, @filter.profanity_count(@profanity_five_matches_with_emoji)
+    assert @filter.profane?(@profanity_three_matches_with_emoji)
+    assert_equal 3, @filter.profanity_count(@profanity_three_matches_with_emoji)
 
     @not_profane_words.each do |word|
       refute @filter.profane? word
@@ -203,7 +203,7 @@ class ProfanityFilterTest < Minitest::Test
       '`F:+![U__@C]?#-k.<$}t%H,"i^_S&|s{*H>(i)=~T;',
     ]
 
-    @profanity_five_matches_with_emoji = 'You areshit! 🖕  s*h!i-- t sh !7 sshhiiit sh!7'
+    @profanity_three_matches_with_emoji = 'You areshit! 🖕  s*h!i-- t sh !7 sshhiiit sh!7'
 
     @not_profane_words = %w(basses phuket)
   end

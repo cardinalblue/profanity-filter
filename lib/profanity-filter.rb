@@ -59,7 +59,7 @@ class ProfanityFilter
     [ALLOW_SYMBOL_STRATEGY, PARTIAL_MATCH_STRATEGY]
   end
 
-  def profane?(phrase, lang: nil, strategies: :all)
+  def profane?(phrase, lang: nil, strategies: :basic)
     return false if phrase == ''
     return false if @whitelist.include?(phrase)
 
@@ -70,7 +70,7 @@ class ProfanityFilter
     end
   end
 
-  def profanity_count(phrase, lang: nil, strategies: :all)
+  def profanity_count(phrase, lang: nil, strategies: :basic)
     return 0 if phrase == '' || phrase.nil?
 
     pf_count = pf_profanity_count(phrase, strategies: strategies)
