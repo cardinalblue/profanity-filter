@@ -12,7 +12,7 @@ This profanity filter implements:
 - [Full Support] diacritics, injections, unicode
 - [Partial Support] similarities, constructions
 
-This gem is also integrated with [Web Purify](https://www.webpurify.com). Usage example below.
+This gem is also integrated with [WebPurify](https://www.webpurify.com). Usage example below.
 
 
 ## Installation
@@ -20,31 +20,75 @@ This gem is also integrated with [Web Purify](https://www.webpurify.com). Usage 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'profanity-filter'
+gem 'profanity-filter', '~> 1.0'
 ```
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
     $ gem install profanity-filter
 
+## Versioning
+Version 1.0 onward is not compatible with previous versions. See [changelog(https://github.com/cardinalblue/profanity-filter/blob/master/CHANGELOG.md)] for details.
+
 ## Usage
+In your Ruby code,
 
 ```ruby
-# without WebPurify 
+# basic usage
 pf = ProfanityFilter.new
-
-# with WebPurify
-pf = ProfanityFilter.new(web_purifier_api_key: [YOUR-API-KEY])
 
 pf.profane? ('ssssshit')
 # => true
 
 pf.profanity_count('fjsdio fdsk fU_cK_THIS_shI_T')
 # => 2
+```
+
+If we want to integrate WebPurify,
+
+```ruby
+# with WebPurify
+pf = ProfanityFilter.new(web_purifier_api_key: [YOUR-API-KEY])
+```
+
+With WebPurify enabled, texts sent to `profane?` and `profanity_count` will **first** be checked against the mechanism this gem provides, **then** against WebPurify if no positive results are returned.  
+
+## Strategies
+There are four different `strategies` that we can compose to our heart's content. 
+
+1. `:partial_match`
+will flag a text as profane if any substrings of it is in our dictionary.
+
+2. `:allow_symbol`
+will flag a text as profane if any word in the text matches our dictionary after removing the symbols.
+
+3. `:duplicate_characters`
+will flag a text as profane if any word in the text matches our dictionary after removing duplications.
+
+4. `:leet`
+will flag a text as profane if any word in the text matches our dictionary after substituting similar unicode characters with their letter correspondents. 
+
+## Config
+By default, the profanity filter implements `:partial_match` and `:allow_symbol` strategies. But we can specify what strategies we want:
+
+```ruby
+pf = ProfanityFilter.new
+
+# type :basic is the default
+pf.profane?('test_string', strategies: :basic)
+pf.profanity_count('test_string', strategies: :basic)
+
+# type :all includes all four strategies
+pf.profane?('test_string', strategies: :all)
+pf.profanity_count('test_string', strategies: :all)
+
+# compose our own
+pf.profane?('test_string', strategies: [:partial_match, :leet])
+pf.profanity_count('test_string', strategies: [:partial_match, :leet])
 ```
 
 ## Development
@@ -64,6 +108,3 @@ The gem is available as open source under the terms of the [MIT License](https:/
 ## Code of Conduct
 
 Everyone interacting in the ProfanityFilter project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/cardinalblue/profanity-filter/blob/master/CODE_OF_CONDUCT.md).
-
-## Todo
-pluggable logging and strategies
