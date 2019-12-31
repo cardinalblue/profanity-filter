@@ -29,7 +29,7 @@ module ProfanityFilterEngine
 
     def profane_words(text)
       total_words = strategies.reduce([]) do |words, strategy|
-        words.concat(strategy.profane_words(text))
+        words.concat(strategy.profane_words(text).map { |w| w.gsub(/[ _\-\.]/, '') })
       end
       total_words.uniq
     end

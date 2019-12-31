@@ -9,70 +9,62 @@ require 'profanity-filter/engines/leet_exact_match_strategy'
 require 'web_purify'
 
 class ProfanityFilter
-  WP_DEFAULT_LANGS = [:en].freeze
-  WP_AVAILABLE_LANGS = [
+  WP_DEFAULT_LANGS    = [:en].freeze
+  WP_LANG_CONVERSIONS = { es: :sp, ko: :kr, ja: :jp }.freeze
+  WP_AVAILABLE_LANGS  = [
     :en, :ar, :fr, :de, :hi, :jp, :it, :pt, :ru, :sp, :th, :tr, :zh, :kr, :pa
   ].freeze
-  WP_LANG_CONVERSIONS = { es: :sp, ko: :kr, ja: :jp }.freeze
 
-  attr_reader :strict_filter, :tolerant_filter
+  attr_reader :available_strategies
 
   def initialize(web_purifier_api_key: nil, whitelist: [])
     # If we are using Web Purifier
     @wp_client = web_purifier_api_key ? WebPurify::Client.new(web_purifier_api_key) : nil
     @whitelist = whitelist
+    raise 'Whitelist should be an array' unless @whitelist.is_a?(Array)
 
     exact_match_dictionary = load_exact_match_dictionary
     partial_match_dictionary = load_partial_match_dictionary
 
-    allow_symbol_strategy = ::ProfanityFilterEngine::AllowSymbolsInWordsStrategy.new(
-      dictionary: exact_match_dictionary,
-      ignore_case: true
-    )
-    duplicate_characters_strategy = ::ProfanityFilterEngine::AllowDuplicateCharactersStrategy.new(
-      dictionary: exact_match_dictionary,
-      ignore_case: true
-    )
-    leet_strategy = ::ProfanityFilterEngine::LeetExactMatchStrategy.new(
-      dictionary: exact_match_dictionary,
-      ignore_case: true
-    )
-    partial_match_strategy = ::ProfanityFilterEngine::PartialMatchStrategy.new(
-      dictionary: partial_match_dictionary,
-      ignore_case: true
-    )
-
-    # Set up strict filter.
-    @strict_filter = ::ProfanityFilterEngine::Composite.new
-    @strict_filter.add_strategies(
-      leet_strategy,
-      allow_symbol_strategy,
-      partial_match_strategy,
-      duplicate_characters_strategy
-    )
-    # Set up tolerant filter.
-    @tolerant_filter = ::ProfanityFilterEngine::Composite.new
-    @tolerant_filter.add_strategies(
-      allow_symbol_strategy,
-      partial_match_strategy
-    )
+    @available_strategies = {
+      allow_symbol: ::ProfanityFilterEngine::AllowSymbolsInWordsStrategy.new(
+        dictionary:  exact_match_dictionary,
+        ignore_case: true
+      ),
+      duplicate_characters: ::ProfanityFilterEngine::AllowDuplicateCharactersStrategy.new(
+        dictionary:  exact_match_dictionary,
+        ignore_case: true
+      ),
+      leet: ::ProfanityFilterEngine::LeetExactMatchStrategy.new(
+        dictionary:  exact_match_dictionary,
+        ignore_case: true
+      ),
+      partial_match: ::ProfanityFilterEngine::PartialMatchStrategy.new(
+        dictionary:  partial_match_dictionary + exact_match_dictionary,
+        ignore_case: true
+      ),
+    }
   end
 
-  def profane?(phrase, lang: nil, strictness: :tolerant)
+  def all_strategy_names
+    available_strategies.keys
+  end
+
+  def profane?(phrase, lang: nil, strategies: :all)
     return false if phrase == ''
     return false if @whitelist.include?(phrase)
 
     if use_webpurify?
-      !!(pf_profane?(phrase, strictness: strictness) || wp_profane?(phrase, lang: lang))
+      !!(pf_profane?(phrase, strategies: strategies) || wp_profane?(phrase, lang: lang))
     else
-      !!pf_profane?(phrase, strictness: strictness)
+      !!pf_profane?(phrase, strategies: strategies)
     end
   end
 
-  def profanity_count(phrase, lang: nil, strictness: :tolerant)
+  def profanity_count(phrase, lang: nil, strategies: :all)
     return 0 if phrase == '' || phrase.nil?
 
-    pf_count = pf_profanity_count(phrase, strictness: strictness)
+    pf_count = pf_profanity_count(phrase, strategies: strategies)
     if use_webpurify?
       pf_count.zero? ? wp_profanity_count(phrase, lang: lang).to_i : pf_count
     else
@@ -86,23 +78,27 @@ class ProfanityFilter
     !!@wp_client
   end
 
-  def filter(strictness: :tolerant)
-    case strictness
-    when :strict
-      @strict_filter
-    when :tolerant
-      @tolerant_filter
-    else
-      @tolerant_filter
+  def filter(strategies:)
+    ::ProfanityFilterEngine::Composite.new.tap do |engine|
+      if strategies == :all
+        engine.add_strategies(*available_strategies.values)
+      else
+        strategies.each do |strategy|
+          strategy = strategy.to_sym
+          raise "Strategy name \"#{strategy}\" not supported." unless all_strategies.include?(strategy)
+
+          engine.add_strategy(available_strategies[strategy])
+        end
+      end
     end
   end
 
-  def pf_profane?(phrase, strictness: :tolerant)
-    filter(strictness: strictness).profane?(phrase)
+  def pf_profane?(phrase, strategies:)
+    filter(strategies: strategies).profane?(phrase)
   end
 
-  def pf_profanity_count(phrase, strictness: :tolerant)
-    filter(strictness: strictness).profanity_count(phrase)
+  def pf_profanity_count(phrase, strategies:)
+    filter(strategies: strategies).profanity_count(phrase)
   end
 
   def wp_profane?(phrase, lang: nil, timeout_duration: 5)

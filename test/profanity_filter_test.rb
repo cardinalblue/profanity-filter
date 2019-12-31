@@ -7,7 +7,6 @@ require 'pry'
 
 class ProfanityFilterTest < Minitest::Test
   def setup
-    prepare_profane_words
     @filter = ProfanityFilter.new
     @filter_with_wp = ProfanityFilter.new(web_purifier_api_key: 'fake_api_key')
   end
@@ -16,7 +15,9 @@ class ProfanityFilterTest < Minitest::Test
     refute_nil ::ProfanityFilter::VERSION
   end
 
-  def test_profanity
+  def test_profanity_with_default_config
+    prepare_profane_words
+
     @profanity_one_match.each do |word|
       assert @filter.profane?(word)
       assert_equal 1, @filter.profanity_count(word)
@@ -27,8 +28,8 @@ class ProfanityFilterTest < Minitest::Test
       assert_equal 2, @filter.profanity_count(word)
     end
 
-    assert @filter.profane?(@profanity_two_matches_with_emoji)
-    assert_equal 2, @filter.profanity_count(@profanity_two_matches_with_emoji)
+    assert @filter.profane?(@profanity_five_matches_with_emoji)
+    assert_equal 5, @filter.profanity_count(@profanity_five_matches_with_emoji)
 
     @not_profane_words.each do |word|
       refute @filter.profane? word
@@ -36,75 +37,76 @@ class ProfanityFilterTest < Minitest::Test
   end
 
   def test_profanity_wp_enabled
+    prepare_profane_words
+
     @not_profane_words.each do |word|
-      any_instance_of(WebPurify::Client) do |wp_client|
-        mock(wp_client).check_count(word, lang: expected_langs(:en)) { 0 }.once
+    any_instance_of(WebPurify::Client) do |wp_client|
+          mock(wp_client).check_count(word, lang: expected_langs(:en)) { 0 }.once
         refute @filter_with_wp.profane? word
       end
     end
   end
 
+  def test_profanity_with_unsupported_whitelist_format
+    assert_raises do
+      ProfanityFilter.new(whitelist: 'unsupported')
+    end
+  end
+
   def test_profanity_with_whitelist
     profane_word = 'shit'
+    assert ProfanityFilter.new.profane?(profane_word)
     refute ProfanityFilter.new(whitelist: [profane_word]).profane?(profane_word)
   end
 
-  def test_strict_and_tolerant_strictness
-    strict_levels = [:tolerant, :strict]
-    both_profane_texts = [
-      'bullshit',
-      'fuck',
-      'f.u.c.k',
-      'f uck',
-      'FUCK',
-      'FU-CK',
-      'Fu-cK',
-      'badmotherfucker',
-      'bad mothe rfucker',
-      'bad.mother*fu-c_ker',
-      'fu-ckpolitics',
-      'fuc kpolitics',
-    ]
-    both_profane_texts.each do |word|
-      strict_levels.each do |strictness|
-        assert @filter.profane?(word, strictness: strictness)
-        assert_equal 1, @filter.profanity_count(word, strictness: strictness)
-      end
+  def test_config_strategies_with_nonexistent_name_throws_exception
+    assert_raises do
+      @filter.profane?('_', strategies: 'nonexistent')
     end
+  end
 
-    different_profanity_count_texts = [
-      'bull shit',
-      'bull-shit',
-    ]
-    different_profanity_count_texts.each do |word|
-      strict_levels.each do |strictness|
-        assert @filter.profane?(word, strictness: strictness)
-        expected_count = (strictness == :strict) ? 2 : 1
-        assert_equal expected_count, @filter.profanity_count(word, strictness: strictness)
-      end
+  def test_config_strategies_works_for_array_of_symbol_or_string
+    strategies = @filter.all_strategy_names.tap do |s|
+      s[0] = s[0].to_s
+      s[1] = s[1].to_s
     end
+    @filter.profane?('_', strategies: strategies)
+  end
+
+  def test_config_with_one_strategy
+    duplicated_profane_word = 'shhhhhhit'
+    refute @filter.profane?(duplicated_profane_word, strategies: [])
+    assert @filter.profane?(duplicated_profane_word, strategies: [:duplicate_characters])
+
+    allow_symbol_profane_word = 's@h@i@t'
+    refute @filter.profane?(allow_symbol_profane_word, strategies: [])
+    assert @filter.profane?(allow_symbol_profane_word, strategies: [:allow_symbol])
+
+    leet_profane_word = 'sĦit'
+    refute @filter.profane?(leet_profane_word, strategies: [])
+    assert @filter.profane?(leet_profane_word, strategies: [:leet])
+
+    partial_match_profane_word = 'random🖕 string'
+    refute @filter.profane?(partial_match_profane_word, strategies: [])
+    assert @filter.profane?(partial_match_profane_word, strategies: [:partial_match])
+  end
+
+  def test_config_with_legacy_tolerant_and_strict_filter
+    legacy_tolerant_filter_strategies = [:allow_symbol, :partial_match]
+    legacy_strict_filter_strategies = @filter.all_strategy_names
 
     only_strict_profane_texts = [
       'You are s.h-!7!',
       'You are ssshiiittt!',
     ]
-    only_strict_profane_texts.each do |word|
-      refute @filter.profane?(word, strictness: :tolerant)
-      assert_equal 0, @filter.profanity_count(word, strictness: :tolerant)
-      assert @filter.profane?(word, strictness: :strict)
-      assert_equal 1, @filter.profanity_count(word, strictness: :strict)
-    end
 
-    assert @filter.profane?(@profanity_two_matches_with_emoji, strictness: :tolerant)
-    assert_equal 2, @filter.profanity_count(
-      @profanity_two_matches_with_emoji,
-      strictness: :tolerant
-    )
-    assert @filter.profane?(@profanity_two_matches_with_emoji, strictness: :strict)
-    assert_equal 4, @filter.profanity_count(
-      @profanity_two_matches_with_emoji,
-      strictness: :strict
-    )
+    only_strict_profane_texts.each do |word|
+      assert_equal 0, @filter.profanity_count(word, strategies: legacy_tolerant_filter_strategies)
+      assert_equal 1, @filter.profanity_count(word, strategies: legacy_strict_filter_strategies)
+
+      refute @filter.profane?(word, strategies: legacy_tolerant_filter_strategies)
+      assert @filter.profane?(word, strategies: legacy_strict_filter_strategies)
+    end
   end
 
   def test_wp_profanity_count
@@ -192,20 +194,23 @@ class ProfanityFilterTest < Minitest::Test
       'FU-CK',
       'Fu-cK',
       'badmotherfucker',
-      'bad mothe rfucker',
       'bad.mother*fu-c_ker',
       'fu-ckpolitics',
       'fuc kpolitics',
-      'bull-shit',
       'bull shit',
+      'bull-shit',
     ]
-    @profanity_two_matches = %w(
-      FUCK_THIS_SHIT
-      FuCk_THiS_shIT
-      fU_cK_THIS_shI_T
-      `F:+![U__@C]?#-k.<$}t%H,"i^_S&|s{*H>(i)=~T;
-    )
-    @profanity_two_matches_with_emoji = 'You areshit! 🖕  s*h!i-- t sh !7 sshhiiit sh!7'
+
+    @profanity_two_matches = [
+      'FUCK_THIS_SHIT',
+      'FuCk_THiS_shIT',
+      'fU_cK_THIS_shI_T',
+      'bad mothe rfucker',
+      '`F:+![U__@C]?#-k.<$}t%H,"i^_S&|s{*H>(i)=~T;',
+    ]
+
+    @profanity_five_matches_with_emoji = 'You areshit! 🖕  s*h!i-- t sh !7 sshhiiit sh!7'
+
     @not_profane_words = %w(basses phuket)
   end
 
