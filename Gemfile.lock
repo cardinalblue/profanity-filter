@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    profanity-filter (0.1.4)
+    profanity-filter (1.0)
       webpurify
 
 GEM
