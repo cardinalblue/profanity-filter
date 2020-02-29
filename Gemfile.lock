@@ -14,7 +14,7 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    rake (10.5.0)
+    rake (13.0.1)
     rr (1.2.1)
     webpurify (1.0.1)
       json
@@ -27,7 +27,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   profanity-filter!
   pry (~> 0.12.2)
-  rake (~> 10.0)
+  rake (~> 13.0)
   rr
 
 BUNDLED WITH
