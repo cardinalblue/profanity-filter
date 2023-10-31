@@ -91,11 +91,11 @@ pf.profane?('test_string', strategies: [:partial_match, :leet])
 pf.profanity_count('test_string', strategies: [:partial_match, :leet])
 ```
 
-Also, we also supports `whitelist`, specified at object creation.
+We also support an `ignore_list`, specified at object creation.
 
 ```ruby
-pf_with_whitelist = ProfanityFilter.new(whitelist: ['asshole'])
-pf_with_whitelist.profane?('asshole')
+pf_with_ignore_list = ProfanityFilter.new(ignore_list: ['scunthorpe'])
+pf_with_ignore_list.profane?('Scunthorpe United')
 # => false
 
 ```

@@ -22,11 +22,11 @@ class ProfanityFilter
 
   attr_reader :available_strategies
 
-  def initialize(web_purifier_api_key: nil, whitelist: [])
+  def initialize(web_purifier_api_key: nil, ignore_list: [])
     # If we are using Web Purifier
     @wp_client = web_purifier_api_key ? WebPurify::Client.new(web_purifier_api_key) : nil
-    @whitelist = whitelist
-    raise 'Whitelist should be an array' unless @whitelist.is_a?(Array)
+    @ignore_list = ignore_list
+    raise 'ignore_list should be an array' unless @ignore_list.is_a?(Array)
 
     exact_match_dictionary = load_exact_match_dictionary
     partial_match_dictionary = load_partial_match_dictionary
@@ -61,7 +61,10 @@ class ProfanityFilter
 
   def profane?(phrase, lang: nil, strategies: :basic)
     return false if phrase == ''
-    return false if @whitelist.include?(phrase)
+
+    @ignore_list.each do |ignore|
+      phrase = phrase.gsub(/#{ignore}/i, ' ')
+    end
 
     if use_webpurify?
       !!(pf_profane?(phrase, strategies: strategies) || wp_profane?(phrase, lang: lang))

@@ -47,16 +47,15 @@ class ProfanityFilterTest < Minitest::Test
     end
   end
 
-  def test_profanity_with_unsupported_whitelist_format
+  def test_profanity_with_unsupported_ignore_list_format
     assert_raises do
-      ProfanityFilter.new(whitelist: 'unsupported')
+      ProfanityFilter.new(ignore_list: 'unsupported')
     end
   end
 
-  def test_profanity_with_whitelist
-    profane_word = 'shit'
-    assert ProfanityFilter.new.profane?(profane_word)
-    refute ProfanityFilter.new(whitelist: [profane_word]).profane?(profane_word)
+  def test_profanity_with_ignore_list
+    assert ProfanityFilter.new.profane?('Scunthorpe')
+    refute ProfanityFilter.new(ignore_list: ['scunthorpe']).profane?('Scunthorpe United')
   end
 
   def test_config_strategies_with_nonexistent_name_throws_exception
