@@ -47,16 +47,22 @@ class ProfanityFilterTest < Minitest::Test
     end
   end
 
-  def test_profanity_with_unsupported_whitelist_format
+  def test_profanity_with_unsupported_ignore_list_format
     assert_raises do
-      ProfanityFilter.new(whitelist: 'unsupported')
+      ProfanityFilter.new(ignore_list: 'unsupported')
     end
   end
 
-  def test_profanity_with_whitelist
-    profane_word = 'shit'
-    assert ProfanityFilter.new.profane?(profane_word)
-    refute ProfanityFilter.new(whitelist: [profane_word]).profane?(profane_word)
+  def test_profanity_with_ignore_list
+    basic_filter = ProfanityFilter.new
+    assert basic_filter.profane?('Scunthorpe United')
+    assert basic_filter.profane?('Shitake mushrooms')
+
+    filter_with_exceptions = ProfanityFilter.new(ignore_list: ['scunthorpe', /shii?take/i])
+    refute filter_with_exceptions.profane?('Scunthorpe United')
+    refute filter_with_exceptions.profane?('Shitake mushrooms')
+    assert filter_with_exceptions.profane?('what a cunt!')
+    assert filter_with_exceptions.profane?('Shithead!')
   end
 
   def test_config_strategies_with_nonexistent_name_throws_exception
