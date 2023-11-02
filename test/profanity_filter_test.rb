@@ -54,8 +54,15 @@ class ProfanityFilterTest < Minitest::Test
   end
 
   def test_profanity_with_ignore_list
-    assert ProfanityFilter.new.profane?('Scunthorpe')
-    refute ProfanityFilter.new(ignore_list: ['scunthorpe']).profane?('Scunthorpe United')
+    basic_filter = ProfanityFilter.new
+    assert basic_filter.profane?('Scunthorpe United')
+    assert basic_filter.profane?('Shitake mushrooms')
+
+    filter_with_exceptions = ProfanityFilter.new(ignore_list: ['scunthorpe', /shii?take/i])
+    refute filter_with_exceptions.profane?('Scunthorpe United')
+    refute filter_with_exceptions.profane?('Shitake mushrooms')
+    assert filter_with_exceptions.profane?('what a cunt!')
+    assert filter_with_exceptions.profane?('Shithead!')
   end
 
   def test_config_strategies_with_nonexistent_name_throws_exception

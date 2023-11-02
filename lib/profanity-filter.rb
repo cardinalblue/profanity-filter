@@ -63,7 +63,8 @@ class ProfanityFilter
     return false if phrase == ''
 
     @ignore_list.each do |ignore|
-      phrase = phrase.gsub(/#{ignore}/i, ' ')
+      pattern = ignore.is_a?(Regexp) ? ignore : /#{ignore}/i
+      phrase = phrase.gsub(pattern, ' ')
     end
 
     if use_webpurify?

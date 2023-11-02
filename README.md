@@ -94,11 +94,13 @@ pf.profanity_count('test_string', strategies: [:partial_match, :leet])
 We also support an `ignore_list`, specified at object creation.
 
 ```ruby
-pf_with_ignore_list = ProfanityFilter.new(ignore_list: ['scunthorpe'])
+pf_with_ignore_list = ProfanityFilter.new(ignore_list: ['scunthorpe', /shii?take/i])
 pf_with_ignore_list.profane?('Scunthorpe United')
 # => false
-
+pf_with_ignore_list.profane?('Shitake mushrooms')
+# => false
 ```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
